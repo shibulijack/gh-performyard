@@ -22,6 +22,7 @@
   "homepage": "https://github.com/shibulijack/gh-performyard#readme",
   "dependencies": {
     "@octokit/rest": "^16.37.0",
+    "colors": "^1.4.0",
     "github-api": "^3.3.0"
   }
 }
