@@ -34,3 +34,7 @@ Run the node.js script to generate stats from Github since Jan 1, 2019.
 ```
 npm start
 ```
+
+**Sample screenshot**
+
+![screenshot](https://shibulijack.files.wordpress.com/2020/01/screen-shot-2020-01-23-at-1.14.43-am.png?w=1280&h=1454)
