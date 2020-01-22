@@ -1,41 +1,39 @@
 const Octokit = require("@octokit/rest");
+const CONFIG = require("./config");
 
 const octokit = Octokit({
-	auth: "GITHUB_AUTH_TOKEN",
+	auth: CONFIG.GITHUB_AUTH_TOKEN,
 	userAgent: "gh-performyard v1.0.0",
 	baseUrl: "https://api.github.com"
 });
 
-const owner = "freshdesk";
-const repo = "helpkit-ember";
 const FROM_DATE = new Date(2019, 0, 1); // JAN 1, 2019
-const USER_NAME = "shibulijack-fd";
-const MAX_PAGES = 10;
+const MAX_PAGES = 2;
 
 async function listPRs(page) {
 	let { data } = await octokit.pulls.list({
-		owner,
-		repo,
-		state: "closed",
-		base: "prestaging",
+		owner: CONFIG.GITHUB_ORG,
+		repo: CONFIG.GITHUB_REPO,
+		state: CONFIG.PR_STATE || "closed",
+		base: CONFIG.PR_BASE_BRANCH || "master",
 		per_page: 100,
 		page
 	});
 	let myPRs = data.filter(
 		pr =>
-			pr.user.login === USER_NAME &&
+			pr.user.login === CONFIG.GITHUB_USER &&
 			Date.parse(pr.created_at) > FROM_DATE.getTime()
 	);
 	let myPRReviews = data.filter(pr => {
 		let isLatest = Date.parse(pr.created_at) > FROM_DATE.getTime();
 		let isMine = pr.requested_reviewers.some(
-			reviewer => reviewer.login === USER_NAME
+			reviewer => reviewer.login === CONFIG.GITHUB_USER
 		);
 		return isLatest && isMine;
 	});
 	if (myPRs && myPRs.length > 0) {
 		myPRs.forEach(pr => {
-			console.log(`PR ${pr.number}`);
+			console.log(`PR#${pr.number}`);
 			console.log(`TITLE: ${pr.title}`);
 			console.log(`DESCRIPTION: ${pr.body}`);
 			if (pr.merged_at) {
