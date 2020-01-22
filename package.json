@@ -1,0 +1,27 @@
+{
+  "name": "gh-performyard",
+  "version": "1.0.0",
+  "description": "Performyard stats from Github",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shibulijack/gh-performyard.git"
+  },
+  "keywords": [
+    "github"
+  ],
+  "author": "Shibu Lijack",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/shibulijack/gh-performyard/issues"
+  },
+  "homepage": "https://github.com/shibulijack/gh-performyard#readme",
+  "dependencies": {
+    "@octokit/rest": "^16.37.0",
+    "github-api": "^3.3.0"
+  }
+}
