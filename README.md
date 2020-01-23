@@ -14,6 +14,11 @@ Create Github Personal Access Token with SSO enabled.
 https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line#creating-a-token
 
 ### STEP 2
+
+```
+git clone https://github.com/shibulijack-fd/gh-performyard.git
+```
+
 Update `config.js`
 
 ```js
