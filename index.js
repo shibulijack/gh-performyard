@@ -9,7 +9,7 @@ const octokit = Octokit({
 });
 
 const FROM_DATE = new Date(2019, 0, 1); // JAN 1, 2019
-const MAX_PAGES = 2;
+const MAX_PAGES = 10;
 
 async function asyncForEach(array, callback) {
   for (let index = 0; index < array.length; index++) {
@@ -33,7 +33,7 @@ async function getReviewCount(pulls) {
     if (
       reviews &&
       reviews.length > 0 &&
-      reviews.some(review => review.user.login === CONFIG.GITHUB_USER)
+      reviews.some(review => review.user && review.user.login === CONFIG.GITHUB_USER)
     ) {
       count += 1;
     }
@@ -63,7 +63,6 @@ async function listPRs(page) {
     );
     return isLatest && isMine;
   });
-  let myCompletedReviews = await getReviewCount(data);
 
   if (myPRs && myPRs.length > 0) {
     myPRs.forEach(pr => {
@@ -98,8 +97,9 @@ ${pr.body}`.grey
     });
     return new Promise(function(resolve, reject) {
       resolve({
+        data,
         pr: myPRs.length,
-        reviews: myPRReviews.length + myCompletedReviews
+        reviews: myPRReviews.length
       });
     });
   }
@@ -107,21 +107,33 @@ ${pr.body}`.grey
 
 async function getAllPRs() {
   let totalNumberOfPRs = 0;
+  let myCompletedReviews = 0;
   let totalNumberOfReviews = 0;
+  let allPRs = [];
   console.log(
     "Repo: ".bold + `${CONFIG.GITHUB_ORG}/${CONFIG.GITHUB_REPO}`.green
   );
   console.log("User: ".bold + `${CONFIG.GITHUB_USER}`.green);
   console.log("\n");
   console.log(`Fetching data from Github...`.yellow);
+  console.log("\n");
+
+  // Get all PR data
   for (let p = 1; p < MAX_PAGES; p++) {
     let result = await listPRs(p);
     if (result) {
-      let { pr, reviews } = result;
+      let { pr, reviews, data } = result;
+      allPRs = allPRs.concat(data);
       totalNumberOfPRs += pr ? pr : 0;
       totalNumberOfReviews += reviews ? reviews : 0;
     }
   }
+
+  console.log(`Generating PR stats from Github...`.yellow);
+  console.log("\n");
+  myCompletedReviews = await getReviewCount(allPRs);
+  totalNumberOfReviews += myCompletedReviews;
+
   console.log(`TOTAL PRs raised:`.bold);
   console.log(`${totalNumberOfPRs}`.bold.green);
   console.log("\n");
