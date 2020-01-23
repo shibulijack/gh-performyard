@@ -9,7 +9,38 @@ const octokit = Octokit({
 });
 
 const FROM_DATE = new Date(2019, 0, 1); // JAN 1, 2019
-const MAX_PAGES = 10;
+const MAX_PAGES = 2;
+
+async function asyncForEach(array, callback) {
+  for (let index = 0; index < array.length; index++) {
+    await callback(array[index], index, array);
+  }
+}
+
+async function listReviews(pull_number) {
+  let { data } = await octokit.pulls.listReviews({
+    owner: CONFIG.GITHUB_ORG,
+    repo: CONFIG.GITHUB_REPO,
+    pull_number
+  });
+  return data;
+}
+
+async function getReviewCount(pulls) {
+  let count = 0;
+  let reviewCounting = asyncForEach(pulls, async pr => {
+    let reviews = await listReviews(pr.number);
+    if (
+      reviews &&
+      reviews.length > 0 &&
+      reviews.some(review => review.user.login === CONFIG.GITHUB_USER)
+    ) {
+      count += 1;
+    }
+  });
+  await reviewCounting;
+  return count;
+}
 
 async function listPRs(page) {
   let { data } = await octokit.pulls.list({
@@ -32,6 +63,8 @@ async function listPRs(page) {
     );
     return isLatest && isMine;
   });
+  let myCompletedReviews = await getReviewCount(data);
+
   if (myPRs && myPRs.length > 0) {
     myPRs.forEach(pr => {
       console.log(`PR#${pr.number}`.green);
@@ -57,9 +90,7 @@ ${pr.body}`.grey
           `Merged in ${days} days ${hours} hours ${minutes} minutes`.cyan
         );
       } else {
-        console.log(
-          `Not yet merged`.red
-        );
+        console.log(`Not yet merged`.red);
       }
       console.log("\n");
       console.log(`=============================================`.gray);
@@ -68,7 +99,7 @@ ${pr.body}`.grey
     return new Promise(function(resolve, reject) {
       resolve({
         pr: myPRs.length,
-        reviews: myPRReviews.length
+        reviews: myPRReviews.length + myCompletedReviews
       });
     });
   }
@@ -77,6 +108,12 @@ ${pr.body}`.grey
 async function getAllPRs() {
   let totalNumberOfPRs = 0;
   let totalNumberOfReviews = 0;
+  console.log(
+    "Repo: ".bold + `${CONFIG.GITHUB_ORG}/${CONFIG.GITHUB_REPO}`.green
+  );
+  console.log("User: ".bold + `${CONFIG.GITHUB_USER}`.green);
+  console.log("\n");
+  console.log(`Fetching data from Github...`.yellow);
   for (let p = 1; p < MAX_PAGES; p++) {
     let result = await listPRs(p);
     if (result) {
