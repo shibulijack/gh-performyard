@@ -9,7 +9,7 @@ const octokit = Octokit({
 });
 
 const FROM_DATE = new Date(2019, 0, 1); // JAN 1, 2019
-const MAX_PAGES = 2;
+const MAX_PAGES = 10;
 
 async function listPRs(page) {
   let { data } = await octokit.pulls.list({
@@ -42,6 +42,7 @@ ${pr.title}`);
           `
 ${pr.body}`.grey
         );
+        console.log("\n");
       }
       if (pr.merged_at) {
         let delta =
@@ -52,9 +53,12 @@ ${pr.body}`.grey
         delta -= hours * 3600;
         let minutes = Math.floor(delta / 60) % 60;
         delta -= minutes * 60;
-        console.log("\n");
         console.log(
           `Merged in ${days} days ${hours} hours ${minutes} minutes`.cyan
+        );
+      } else {
+        console.log(
+          `Not yet merged`.red
         );
       }
       console.log("\n");
