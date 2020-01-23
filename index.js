@@ -17,7 +17,8 @@ async function asyncForEach(array, callback) {
   }
 }
 
-async function listReviews(pull_number) {
+async function listReviews(pull_number, title) {
+  console.log("Processing ".yellow + `PR#${pull_number} `.grey + `${title}`);
   let { data } = await octokit.pulls.listReviews({
     owner: CONFIG.GITHUB_ORG,
     repo: CONFIG.GITHUB_REPO,
@@ -29,11 +30,13 @@ async function listReviews(pull_number) {
 async function getReviewCount(pulls) {
   let count = 0;
   let reviewCounting = asyncForEach(pulls, async pr => {
-    let reviews = await listReviews(pr.number);
+    let reviews = await listReviews(pr.number, pr.title);
     if (
       reviews &&
       reviews.length > 0 &&
-      reviews.some(review => review.user && review.user.login === CONFIG.GITHUB_USER)
+      reviews.some(
+        review => review.user && review.user.login === CONFIG.GITHUB_USER
+      )
     ) {
       count += 1;
     }
@@ -134,6 +137,7 @@ async function getAllPRs() {
   myCompletedReviews = await getReviewCount(allPRs);
   totalNumberOfReviews += myCompletedReviews;
 
+  console.log("\n");
   console.log(`TOTAL PRs raised:`.bold);
   console.log(`${totalNumberOfPRs}`.bold.green);
   console.log("\n");
