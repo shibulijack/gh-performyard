@@ -37,6 +37,7 @@ module.exports = {
 Run the node.js script to generate stats from Github since Jan 1, 2019.
 
 ```
+npm install
 npm start
 ```
 
